@@ -26,10 +26,12 @@ def train_model(data, alpha, num_iterations):
 	b, a = 0, 0
 	n = len(data)
 
-	# データからmileage（走行距離）とprice（価格）を抽出し、NumPy配列に変換
-	# Convert lists to numpy arrays
-	# x = 走行距離
-	# y = 価格
+	"""
+	データからmileage（走行距離）とprice（価格）を抽出し、NumPy配列に変換
+	Convert lists to numpy arrays
+	x = 走行距離
+	y = 価格
+	"""
 	x = np.array([row[0] for row in data])  
 	y = np.array([row[1] for row in data])  
 
@@ -37,9 +39,11 @@ def train_model(data, alpha, num_iterations):
 	x_mean, x_std = np.mean(x), np.std(x)
 	y_mean, y_std = np.mean(y), np.std(y)
 
-	# 正規化 = （データ - 平均）/ 標準偏差
-	# - 標準偏差で割ることの意味：
-	#   - 正規化されたデータの約68%が-1と1の間に、約95%が-2と2の間に収まる（正規分布の特性）。
+	"""
+	正規化 = （データ - 平均）/ 標準偏差
+	- 標準偏差で割ることの意味：
+	  - 正規化されたデータの約68%が-1と1の間に、約95%が-2と2の間に収まる（正規分布の特性）。
+	"""
 	x_norm = (x - x_mean) / x_std
 	y_norm = (y - y_mean) / y_std
 
@@ -48,12 +52,14 @@ def train_model(data, alpha, num_iterations):
 		# 予測値の計算: 線形回帰の基本形　y = ax + b の正規化バージョン
 		y_pred = b + a * x_norm
 
-		# 勾配の計算（正規化されたデータを使用）: 平均二乗誤差（MSE）の a と b に関する偏導関数
-		#  ∂MSE/∂a = (-2/n) * Σ(yi - (θ1*xi + θ0)) * xi 
-		#  ∂MSE/∂θ0 = (-2/n) * Σ(yi - (θ1*xi + θ0)) 
-		# (-2/n) は定数項
-		# n = データ点の数
-		# Σ(y_norm - y_pred) = 実際の値と予測値の差（誤差）の合計
+		"""
+		勾配の計算（正規化されたデータを使用）: 平均二乗誤差（MSE）の a と b に関する偏導関数
+		 ∂MSE/∂a = (-2/n) * Σ(yi - (θ1*xi + θ0)) * xi 
+		 ∂MSE/∂θ0 = (-2/n) * Σ(yi - (θ1*xi + θ0)) 
+		(-2/n) は定数項
+		n = データ点の数
+		Σ(y_norm - y_pred) = 実際の値と予測値の差（誤差）の合計
+		"""
 		grad_a = (-2/n) * np.sum((y_norm - y_pred) * x_norm)
 		grad_b = (-2/n) * np.sum(y_norm - y_pred)
 
@@ -62,31 +68,33 @@ def train_model(data, alpha, num_iterations):
 		# b = b - η * (∂MSE/∂b)
 		a = a - alpha * grad_a
 		b = b - alpha * grad_b
-
-	# 非正規化: 正規化されたパラメータを元のスケールに戻す
-	# 1. 基本的な関係式:
-	#    正規化前: y = a_original * x + b_original
-	#    正規化後: y_norm = a * x_norm + b
-	# 2. 正規化の定義:
-	#    x_norm = (x - x_mean) / x_std
-	#    y_norm = (y - y_mean) / y_std
-	# 3. 正規化された式を元の変数で表現:
-	#    y_normとx_normを定義で書き直すと: y_norm = (y - y_mean) / y_std = a * x_norm + b = a * (x - x_mean) / x_std + b
-	#    (y - y_mean) / y_std = a * (x - x_mean) / x_std + b
-	# 4. 式変形のステップ:
-	#    a) 両辺に y_std をかける:
-	#       y - y_mean = a * (y_std / x_std) * (x - x_mean) + b * y_std
-	#    b) 右辺の括弧を展開:
-	#       y - y_mean = a * (y_std / x_std) * x - a * (y_std / x_std) * x_mean + b * y_std
-	#    c) 両辺に y_mean を足す:
-	#       y = a * (y_std / x_std) * x - a * (y_std / x_std) * x_mean + b * y_std + y_mean
-	# 5. 正規化前の関係式と比較:
-	#    y = a_original * x + b_original
-	#
-	#    したがって:
-	#    a_original = a * (y_std / x_std)
-	#    b_original = b * y_std + y_mean - a * (y_std / x_std) * x_mean
-	# 6. 非正規化の実行:
+		
+	"""
+	非正規化: 正規化されたパラメータを元のスケールに戻す
+	1. 基本的な関係式:
+		正規化前: y = a_original * x + b_original
+		正規化後: y_norm = a * x_norm + b
+	2. 正規化の定義:
+		x_norm = (x - x_mean) / x_std
+		y_norm = (y - y_mean) / y_std
+	3. 正規化された式を元の変数で表現:
+		y_normとx_normを定義で書き直すと: y_norm = (y - y_mean) / y_std = a * x_norm + b = a * (x - x_mean) / x_std + b
+		(y - y_mean) / y_std = a * (x - x_mean) / x_std + b
+	4. 式変形のステップ:
+		a) 両辺に y_std をかける:
+			y - y_mean = a * (y_std / x_std) * (x - x_mean) + b * y_std
+		b) 右辺の括弧を展開:
+			y - y_mean = a * (y_std / x_std) * x - a * (y_std / x_std) * x_mean + b * y_std
+		c) 両辺に y_mean を足す:
+			y = a * (y_std / x_std) * x - a * (y_std / x_std) * x_mean + b * y_std + y_mean
+	5. 正規化前の関係式と比較:
+		y = a_original * x + b_original
+	
+		したがって:
+		a_original = a * (y_std / x_std)
+		b_original = b * y_std + y_mean - a * (y_std / x_std) * x_mean
+	6. 非正規化の実行:
+	"""
 	a = a * (y_std / x_std)
 	b = (b * y_std) + y_mean - (a * x_mean)
 
